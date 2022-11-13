@@ -2,7 +2,7 @@
 title: "p8105_hw5_ruijipan"
 author: "ruijipan"
 date: "2022-11-13"
-output: html_document
+output: pdf_document
 ---
 
 ## Introduction
