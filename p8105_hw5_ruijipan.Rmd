@@ -1,0 +1,132 @@
+---
+title: "p8105_hw5_ruijipan"
+author: "ruijipan"
+date: "2022-11-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(prompt = TRUE, comment = '', collapse = TRUE, message = FALSE, warning = FALSE)
+```
+
+## R Markdown
+
+
+
+```{r}
+library(tidyverse)
+filenames = list.files('./data/longitudinal-study')
+filepaths = paste('./data/longitudinal-study/',filenames,sep="")
+df = map_dfr(filepaths, read.csv, .id = "input")
+df
+```
+
+
+
+```{r}
+df = rename(df,c(arm=input))
+str_arm = strsplit(filenames,"\\.")
+
+var_arm = vector("list", length = 20)
+var_id = vector("list", length = 20)
+for(i in 1:20){
+  var_arm[[i]] = strsplit(str_arm[[i]][1],"_")[[1]][1]
+  var_id[[i]] = strsplit(str_arm[[i]][1],"_")[[1]][2]
+}
+df$arm = var_arm
+df$subject_id = var_id
+df = df %>%
+  select(arm, subject_id, everything())
+df
+```
+
+```{r}
+homicides_df = read.csv("./data/homicides/homicide-data.csv")
+homicides_df$city_state = paste(homicides_df$city,homicides_df$state)
+head(homicides_df)
+```
+```{r}
+homicidesBycity = 
+  homicides_df %>%
+  group_by(city) %>%
+  summarise(count = n())
+head(homicidesBycity)
+```
+```{r}
+unsolved_homicides = 
+  homicides_df %>%
+  filter(disposition %in% c("Closed without arrest","Open/No arrest")) %>%
+  summarise(disposition = "unsolved",total = n())
+head(unsolved_homicides)
+```
+```{r}
+Baltimore_MD_unsolved = 
+  homicides_df %>%
+  filter(disposition %in% c("Closed without arrest","Open/No arrest") & city_state == "Baltimore MD") %>%
+  summarise(disposition = "MD_unsolved",total = n())
+head(Baltimore_MD_unsolved)
+```
+
+```{r}
+Baltimore_MD_total = 
+  homicides_df %>%
+  filter(city_state == "Baltimore MD") %>%
+  summarise(disposition = "MD_total",total = n())
+head(Baltimore_MD_total)
+```
+```{r}
+prop_test = prop.test(Baltimore_MD_unsolved$total,Baltimore_MD_total$total)
+prop_test_df = broom::tidy(prop_test)
+prop_test_result_df = prop_test_df %>%
+  select(estimate, conf.low, conf.high)
+prop_test_result_df
+cat("proportion estimate: ",prop_test_df$estimate, "\n")
+cat("the 0.95 conf.low: ", prop_test_df$conf.low, "\n")
+cat("the 0.95 conf.high: ", prop_test_df$conf.high, "\n")
+```
+
+
+
+
+```{r}
+# define a function for the above code
+# input: city
+# output: prop_test_result_df
+proportion = function(x){
+  city_total = 
+  homicides_df %>%
+  filter(city_state == x) %>%
+  summarise(disposition = "city_total",total = n())
+  
+  city_unsolved = 
+  homicides_df %>%
+  filter(disposition %in% c("Closed without arrest","Open/No arrest") & city_state == x) %>%
+  summarise(disposition = "city_unsolved",total = n())
+  
+  prop_test = prop.test(city_unsolved$total,city_total$total)
+  prop_test_df = broom::tidy(prop_test)
+  prop_test_result_df = prop_test_df %>%
+    select(estimate, conf.low, conf.high)
+  
+  prop_test_result_df
+}
+```
+
+```{r}
+
+prop_result = map_dfr(unique(homicides_df$city_state), proportion, .id = "input")
+prop_result = rename(prop_result,c(city_state=input))
+prop_result$city_state = unique(homicides_df$city_state)
+prop_result
+
+```
+```{r}
+prop_result %>%
+  ggplot() +
+  geom_errorbar(aes(x=city_state, ymin=conf.low, ymax=conf.high,color=city_state), position = position_dodge()) + geom_point(aes(x=city_state, y=estimate,color=city_state))
+                  
+```
+```{r}
+
+```
+
