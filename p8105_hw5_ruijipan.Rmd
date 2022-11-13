@@ -16,10 +16,10 @@ knitr::opts_chunk$set(prompt = TRUE, comment = '', collapse = TRUE, message = FA
 
 ## Problem 1 
 
-First, create a data folder to store the data needed for this report; Under the data folder, create a subfolder named authentic-study to store data about a authentic study.
+First, create a data folder to store the data needed for this report; Under the data folder, create a subfolder named longitudinal-study to store data about a longitudinal study.
 
-The following code shows how to use the list.files function and the map_dfr function to read data sets in batches and store the data as a data frame type R language object; Among them, the paste function is used for string merging, which combines the strength of data with data
-The file names are merged to form the input parameters of the read.csv function.
+The following code shows how to use the list.files function and the `map_dfr` function to read data sets in batches and store the data as a data frame type R language object; Among them, the paste function is used for string merging, which combines the strength of data with data
+The file names are merged to form the input parameters of the `read.csv` function.
 
 ```{r}
 library(tidyverse)
