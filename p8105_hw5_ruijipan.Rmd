@@ -120,13 +120,97 @@ prop_result$city_state = unique(homicides_df$city_state)
 prop_result
 
 ```
-```{r}
+```{r, fig.width=10, fig.height=6, fig.align='center'}
 prop_result %>%
   ggplot() +
   geom_errorbar(aes(x=city_state, ymin=conf.low, ymax=conf.high,color=city_state), position = position_dodge()) + geom_point(aes(x=city_state, y=estimate,color=city_state))
                   
 ```
 ```{r}
+library(tidyverse)
+set.seed(1)
+data_norm = vector("list", 5000)
+for(i in 1:5000){
+  data_norm[[i]] = rnorm(n = 30, mean = 0, sd = 5) 
+}
+listcol_df = 
+  tibble(
+    sample_id = c(1:5000),
+    samp = data_norm
+  )
+
+listcol_df = 
+  listcol_df %>% 
+  mutate(summary = map2(.x = samp, .y = 0, ~t.test(x = .x, mu = .y)))
 
 ```
 
+
+```{r}
+mean_test_result = map_dfr(listcol_df[[3]], broom::tidy, .id = "sample_id") %>%
+  select(sample_id, estimate, p.value) %>%
+  mutate(rejected = p.value > 0.05)
+mean_test_result
+```
+
+```{r}
+# define a function for the above code
+# input: mean
+# output: dataframe containing sample_id, true_u, estimate, p.value, rejected
+library(tidyverse)
+mean_test = function(x){
+  set.seed(1)
+  data_norm = vector("list", 5000)
+  for(i in 1:5000){
+    data_norm[[i]] = rnorm(n = 30, mean = x, sd = 5) 
+  }
+  listcol_df = 
+    tibble(
+      sample_id = c(1:5000),
+      samp = data_norm
+    )
+  
+  listcol_df = 
+    listcol_df %>% 
+    mutate(summary = map2(.x = samp, .y = x, ~t.test(x = .x, mu = .y)))
+  
+  mean_test_result = map_dfr(listcol_df[[3]], broom::tidy, .id = "sample_id") %>%
+  select(sample_id, estimate, p.value) %>%
+  mutate(true_u = x, rejected = p.value > 0.05)
+  mean_test_result
+}
+```
+
+
+```{r}
+mean_vec = c(1,2,3,4,5,6)
+mean_test_result_df = map_dfr(mean_vec, mean_test)
+```
+
+
+```{r}
+mean_test_result_df %>%
+  group_by(true_u) %>%
+  summarise(rejected_num = sum(rejected)) %>%
+  ggplot(aes(x = true_u, y = rejected_num, fill = true_u)) +
+  geom_bar(stat = "identity")
+```
+
+```{r}
+mean_test_result_df %>%
+  group_by(true_u) %>%
+  summarise(mean_estimate = mean(estimate)) %>%
+  ggplot(aes(x = true_u, y = mean_estimate)) +
+  geom_point(shape=1) +
+  geom_smooth(method = 'loess')
+```
+```{r}
+mean_test_result_df %>%
+  filter(rejected == TRUE) %>%
+  group_by(true_u) %>%
+  summarise(mean_estimate = mean(estimate)) %>%
+  ggplot(aes(x = true_u, y = mean_estimate)) +
+  geom_point(shape=1) +
+  geom_smooth(method = 'loess')
+```
+equal
