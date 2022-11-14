@@ -2,12 +2,12 @@
 title: "p8105_hw5_ruijipan"
 author: "ruijipan"
 date: "2022-11-13"
-output: pdf_document
+output: html_document
 ---
 
 ## Introduction
 
-This report is used to explain assignment 5 of R language teaching series. Assignment 5 mainly focuses on the study and training of circular grammar in R language.
+This report is used to explain assignment 5 of R language. Assignment 5 mainly focuses on the study and training of iteration grammar in R language.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(prompt = TRUE, comment = '', collapse = TRUE, message = FALSE, warning = FALSE)
@@ -16,9 +16,9 @@ knitr::opts_chunk$set(prompt = TRUE, comment = '', collapse = TRUE, message = FA
 
 ## Problem 1 
 
-First, create a data folder to store the data needed for this report; Under the data folder, create a subfolder named longitudinal-study to store data about a longitudinal study.
+First, create a data folder to store the data needed for this report; Under the data folder, create a subfolder named longitudinal-study to store corresponding dataset.
 
-The following code shows how to use the list.files function and the `map_dfr` function to read data sets in batches and store the data as a data frame type R language object; Among them, the paste function is used for string merging, which combines the strength of data with data
+The following code shows how to use the `list.files` function and the `map_dfr` function to read data sets in batches and store the data as a data frame type R language object; Among them, the `paste` function is used for string merging, which combines the path with the dataset.
 The file names are merged to form the input parameters of the `read.csv` function.
 
 ```{r}
@@ -29,7 +29,7 @@ df = map_dfr(filepaths, read.csv, .id = "input")
 df
 ```
 
-Next, the read data set is cleaned. As you can see, after the data is read in, it is a data frame type object. Rename the input field to arm by using the rename function, and use the character in front of the symbol "_" in the file name as the data content of this field; Then, a new variable "subject_id" is created, and the character after the symbol "_" in the file name is used as the data content of this field. After that, use the select function to rearrange the data fields. As shown in the table below, the data is relatively clean, so no further data cleaning is required.
+Next, clean the dataset. As you can see, after the data is read in, it is a data frame type object. Rename the input field to arm by using the `rename` function, and use the character in front of the symbol "_" in the file name as the data content of this field; Then, a new variable "subject_id" is created, and the character after the symbol "_" in the file name is used as the data content of this field. After that, use the select function to rearrange the data fields. As shown in the table below, the data is relatively clean, so no further data cleaning is required.
 
 ```{r}
 df = rename(df,c(arm=input))
@@ -50,7 +50,7 @@ df
 
 ## Problem 2
 
-The question 2 uses the murder data collected by The Washington Post. This data set contains a total of 52,179 observations and 12 variables. It mainly includes the ID of the case, the reported date of the case, some basic information of the victim, the place where the case happened and the settlement of the case. The following code creates a new city_state field for this data set, merges the city field and the state field, and calculates the total number of cases and the number of unsolved cases in each city.
+The problem 2 uses the homicides data collected by The Washington Post. This data set contains a total of 52,179 observations and 12 variables. It mainly includes the ID of the case, the reported date of the case, some basic information of the victim, the city where the case happened and the settlement of the case. The following code creates a new city_state field for this data set, merges the city field and the state field, and calculates the total number of cases and the number of unsolved cases in each city.
 
 ```{r}
 homicides_df = read.csv("./data/homicides/homicide-data.csv")
@@ -65,7 +65,7 @@ homicidesBycity =
 head(homicidesBycity)
 ```
 
-Next, the function prop.test is used to estimate the unsolved proportion of cases in "Baltimore, MD" city (about 65%), and the list is visualized to output the estimated proportion and confidence intervals of the city.
+Next, the function `prop.test` is used to estimate the unsolved proportion of cases in "Baltimore, MD" city (about 65%), and the list is visualized to output the estimated proportion and confidence intervals of the city.
 
 ```{r}
 unsolved_homicides = 
@@ -126,7 +126,7 @@ proportion = function(x){
 }
 ```
 
-After that, we use the map_dfr function to run our packaged functions in batches and output a data frame containing the output results of all cities.
+After that, use the `map_dfr` function to run our packaged functions in batches and output a data frame containing the output results of all cities.
 
 ```{r}
 
@@ -149,7 +149,7 @@ prop_result %>%
 
 ## Problem 3
 
-For question 3, use the set.seed function to ensure that our results can be reproduced; Then, the data with mean value of 0 and standard deviation of 5 are generated by cyclic batch. The total number of iterations is 5,000, and each iteration generates 30 observation data.
+For problem 3, use the `set.seed` function to ensure that our results can be reproduced; Then, the data with mean value of 0 and standard deviation of 5 are generated by cyclic batch. The total number of iterations is 5,000, and each iteration generates 30 observation data.
 
 ```{r}
 library(tidyverse)
@@ -170,7 +170,7 @@ listcol_df =
 
 ```
 
-For the above-mentioned generated data, 5000 data sets are tested by single sample mean, and the estimated value and significance are extracted. The confidence level of 0.05 is used to judge whether the test result of each data set is significant, and whether the original hypothesis is rejected or not is stored as a rejected variable.
+For the above-mentioned generated data, 5000 datasets are tested by single sample mean, and the estimated value and significance are extracted. The confidence level of 0.05 is used to judge whether the test result of each data set is significant, and whether the original hypothesis is rejected or not is stored as a rejected variable.
 
 ```{r}
 mean_test_result = map_dfr(listcol_df[[3]], broom::tidy, .id = "sample_id") %>%
@@ -209,7 +209,7 @@ mean_test = function(x){
 }
 ```
 
-Take the average values of 1, 2, 3, 4, 5, 6, respectively, and run the above functions in batches. The results of the generated functions are stored in the variable mean_test_result_df.
+Take the mean values of 1, 2, 3, 4, 5, 6, respectively, and run the above functions in batches. The results of the generated functions are stored in the variable mean_test_result_df.
 
 ```{r}
 mean_vec = c(1,2,3,4,5,6)
@@ -226,7 +226,9 @@ mean_test_result_df %>%
   geom_bar(stat = "identity") + 
   ggtitle("rejected_num for every true_u")
 ```
+
 Similarly, the list of test results is grouped according to true_u, and the estimated mean value is calculated, and the corresponding scatter plot is drawn.
+
 ```{r, fig.width=10, fig.height=6, fig.align='center'}
 mean_test_result_df %>%
   group_by(true_u) %>%
@@ -236,6 +238,7 @@ mean_test_result_df %>%
   geom_smooth(method = 'loess') + 
   ggtitle("mean_estimate versus true_u")
 ```
+
 Group the list of test results according to true_u, first screen out the data that reject the original hypothesis, then calculate the estimated mean and draw the corresponding scatter plot.
 
 ```{r, fig.width=10, fig.height=6, fig.align='center'}
@@ -248,4 +251,5 @@ mean_test_result_df %>%
   geom_smooth(method = 'loess') + 
   ggtitle("mean_estimate versus true_u(rejected==TRUE)")
 ```
+
 It can be found that the estimated mean values calculated by the two scatterplots are almost identical. This is because the percentage of failed tests is very high, reaching 80%~90%. Therefore, the estimated average is of course mainly determined by the data sets that failed tests.
